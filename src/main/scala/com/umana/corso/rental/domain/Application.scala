@@ -5,6 +5,9 @@ import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import com.umana.corso.rental.api.RestInterface
+import com.umana.corso.rental.data.repository.MySqlShopRepository
+import com.umana.corso.rental.domain.repository.ShopRepository
+import com.umana.corso.rental.domain.usecase.actor.ShopActor
 
 import scala.concurrent.ExecutionContext
 
@@ -16,20 +19,19 @@ object Application extends App with RestInterface {
   val httpHost = config.getString("http.host")
   val httpPort = config.getInt("http.port")
 
-  // leggo i parametri di connessione per mongo
-  val mongodbUrl = config.getString("mongodb.url")
+  // leggo i parametri di connessione per mysql
+  val mySqlUrl = config.getString("mysql.url")
+  val name = config.getString("mysql.name")
+  val password = config.getString( "mysql.password")
 
-  implicit val system: ActorSystem = ActorSystem("users-microservices")
+  implicit val system: ActorSystem = ActorSystem("rentalmovie-microservices")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   implicit val executionContext: ExecutionContext = system.dispatcher
 
-  val userRepository: UserRepository = new MongoUserRepository(system, mongodbUrl)
-
-  val userActor: ActorRef = system.actorOf(UserActor.props(userRepository))
-
-  val route = userRoutes
-
+  val shopRepository: ShopRepository = new MySqlShopRepository(mySqlUrl,name,password,system)
+  val shopActor: ActorRef = system.actorOf(ShopActor.props(shopRepository))
+  val route = rentalRoutes
   val bindingFuture = Http().bindAndHandle(route, httpHost, httpPort)
   bindingFuture.map { binding =>
     println(s"REST interface bound to ${binding.localAddress}")
@@ -38,8 +40,4 @@ object Application extends App with RestInterface {
     case ex =>
       println(s"REST interface could not bind to $httpHost:$httpPort", ex.getMessage)
   }
-
-}
-
-
 }
