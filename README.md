@@ -1,1 +1,1 @@
-rental_microservices
+rental_microservice

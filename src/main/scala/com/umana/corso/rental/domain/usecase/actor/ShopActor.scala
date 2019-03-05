@@ -4,7 +4,7 @@ import akka.actor.{Actor, Props}
 import akka.pattern.pipe
 import akka.util.Timeout
 import com.umana.corso.rental.domain.repository.ShopRepository
-import com.umana.corso.rental.domain.usecase.message.RentalMessages.{GetShopByIdMovie, GetShopByIdMovieResponse}
+import com.umana.corso.rental.domain.usecase.message.ShopMessages._
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext
@@ -20,6 +20,8 @@ class ShopActor (shopRepository: ShopRepository) extends Actor {
         .getShopByIdMovie(idMovie)
         .map(result => GetShopByIdMovieResponse(result))
         .pipeTo(sender())
+
+
   }
 
 }

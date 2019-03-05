@@ -18,7 +18,7 @@ class MySqlShopRepository (
 
   private implicit val executionContext: ExecutionContext = system.dispatchers.lookup("mysql-dispatcher")
 
-    override def getShopByIdMovie(id:String) : Future[Seq[Shop]] = Future {
+    override def getShopByIdMovie(idToFind:String) : Future[Seq[Shop]] = Future {
       val shopList = ListBuffer.empty[Shop]
 
       try {
@@ -26,7 +26,7 @@ class MySqlShopRepository (
         try {
           val stmt = con.createStatement
           // esecuzione della query
-          val rs = stmt.executeQuery(s"select id,name,city,address from shop where id in (\nselect distinct idShop from \nmoviecopy inner join shop on moviecopy.idShop=shop.id where status = 0 and moviecopy.idMovie='${id}')")
+          val rs = stmt.executeQuery(s"select id,name,city,address from shop where id in (select distinct idShop from moviecopy inner join shop on moviecopy.idShop=shop.id where status = 0 and moviecopy.idMovie='$idToFind')")
           // ciclo sul result set che contiene i risultati della query
           while (rs.next()) {
             val id = rs.getString(1)
@@ -42,4 +42,5 @@ class MySqlShopRepository (
 
       shopList
     }
+
   }

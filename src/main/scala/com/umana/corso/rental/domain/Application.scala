@@ -5,9 +5,9 @@ import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import com.umana.corso.rental.api.RestInterface
-import com.umana.corso.rental.data.repository.MySqlShopRepository
-import com.umana.corso.rental.domain.repository.ShopRepository
-import com.umana.corso.rental.domain.usecase.actor.ShopActor
+import com.umana.corso.rental.data.repository.{MySqlRentRepository, MySqlShopRepository}
+import com.umana.corso.rental.domain.repository.{RentRepository, ShopRepository}
+import com.umana.corso.rental.domain.usecase.actor.{RentActor, ShopActor}
 
 import scala.concurrent.ExecutionContext
 
@@ -31,6 +31,11 @@ object Application extends App with RestInterface {
 
   val shopRepository: ShopRepository = new MySqlShopRepository(mySqlUrl,name,password,system)
   val shopActor: ActorRef = system.actorOf(ShopActor.props(shopRepository))
+
+  val rentRepository: RentRepository = new MySqlRentRepository(mySqlUrl,name,password,system)
+  val rentActor: ActorRef = system.actorOf(RentActor.props(rentRepository))
+
+
   val route = rentalRoutes
   val bindingFuture = Http().bindAndHandle(route, httpHost, httpPort)
   bindingFuture.map { binding =>
