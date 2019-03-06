@@ -1,6 +1,6 @@
 package com.umana.corso.rental.domain.usecase.message
 
-import com.umana.corso.rental.domain.exception.{RentMovieException, ReserveMovieException}
+import com.umana.corso.rental.domain.exception.{DebitException, RentMovieException, ReserveMovieException}
 import com.umana.corso.rental.domain.model.Shop
 
 object RentalMessages {

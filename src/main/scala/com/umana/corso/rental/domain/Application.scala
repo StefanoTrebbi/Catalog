@@ -5,8 +5,8 @@ import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import com.umana.corso.rental.api.RestInterface
-import com.umana.corso.rental.data.repository.{MySqlRentRepository, MySqlShopRepository}
-import com.umana.corso.rental.domain.repository.{RentRepository, ShopRepository}
+import com.umana.corso.rental.data.repository.{ApiUserRepository, MySqlRentRepository, MySqlShopRepository}
+import com.umana.corso.rental.domain.repository.{RentRepository, ShopRepository, UserRepository}
 import com.umana.corso.rental.domain.usecase.actor.{RentActor, ShopActor}
 
 import scala.concurrent.ExecutionContext
@@ -24,6 +24,11 @@ object Application extends App with RestInterface {
   val name = config.getString("mysql.name")
   val password = config.getString( "mysql.password")
 
+  //leggo l'indirizzo del microservices users
+  val usersApi = config.getString("api.users")
+  //leggo l'indirizzo del microservices catalogue
+  val catalogueApi = config.getString("api.catalogue")
+
   implicit val system: ActorSystem = ActorSystem("rentalmovie-microservices")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
@@ -33,7 +38,9 @@ object Application extends App with RestInterface {
   val shopActor: ActorRef = system.actorOf(ShopActor.props(shopRepository))
 
   val rentRepository: RentRepository = new MySqlRentRepository(mySqlUrl,name,password,system)
-  val rentActor: ActorRef = system.actorOf(RentActor.props(rentRepository))
+  val userRepository: UserRepository = new ApiUserRepository(usersApi)
+  val catalogueRepository: UserRepository = new ApiUserRepository(catalogueApi)
+  val rentActor: ActorRef = system.actorOf(RentActor.props(rentRepository,userRepository))
 
 
   val route = rentalRoutes
